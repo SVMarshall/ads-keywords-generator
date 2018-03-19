@@ -1,8 +1,9 @@
 package deepmarketing
 
 import com.spotify.scio._
+import com.spotify.scio.bigquery._
 import com.spotify.scio.values.SCollection
-import deepmarketing.negatives.Negatives
+import com.spotify.scio.bigquery.BigQueryClient
 
 /*
 sbt "runMain [PACKAGE].KeywordsPipeline
@@ -14,17 +15,30 @@ sbt "runMain [PACKAGE].KeywordsPipeline
 case class Keyword(name: String, matchType: String, urlLanding: String)
 
 object KeywordsPipeline {
+
   def main(cmdlineArgs: Array[String]): Unit = {
-    val (sc, args) = ContextAndArgs(cmdlineArgs)
+    implicit val (sc, args) = ContextAndArgs(cmdlineArgs)
 
-    val keywords: SCollection[Keyword] = null  // sc.bigquery bla bla TODO: get from bquery
+    val inputFacets = getInputKeywords()
 
-    val negatives = Negatives.transform(keywords)
-
-    negatives.saveAsAvroFile("negativesPath")
+    //val negatives = Negatives.transform(keywords)
+    //negatives.saveAsAvroFile("negativesPath")
 
   }
 
+  @BigQueryType.fromTable("adwords-dataflow:adwords_project_data_input.facets_input_federated")
+  class InputFacetsRow
+
+  def getInputKeywords()(implicit sc: ScioContext): SCollection[Seq[InputFacetsRow]] = {
+    val bq = BigQueryClient.defaultInstance()
+    val facetsMap = bq.getTypedRows[InputFacetsRow]().toList.groupBy(_.facet.get)
+
+    sc.parallelize(
+      facetsMap.keys.foldLeft(Seq[Seq[InputFacetsRow]]())((xs, x) => xs match {
+        case Seq() => facetsMap(x).map(Seq(_))
+        case _ => xs.flatMap(comb => facetsMap(x).map(_ +: comb))
+      }).flatMap(_.permutations))
+  }
 
   // Word Count:
   /*

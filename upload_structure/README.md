@@ -46,6 +46,14 @@ simply:
 sbt repl/run
 ```
 
+### Run sbt with BigQuery support
+
+```
+sbt -Dbigquery.project=adwords-dataflow
+```
+
+Note: To run with BQ support on IntelliJ, add JVM option in "Preferences > Build, execution, Deployment > sbt". Scio plugin also recommended.
+
 ---
 
 This project is based on the [scio-template](https://github.com/spotify/scio-template).

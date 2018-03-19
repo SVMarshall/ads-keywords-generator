@@ -41,9 +41,10 @@ lazy val root: Project = Project(
     "com.spotify" %% "scio-core" % scioVersion,
     "com.spotify" %% "scio-test" % scioVersion % "test",
     // optional direct runner
-     "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
+    //"org.apache.beam" % "beam-runners-spark" % beamVersion,
+    "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
     // optional dataflow runner
-     "org.apache.beam" % "beam-runners-google-cloud-dataflow-java" % beamVersion,
+    "org.apache.beam" % "beam-runners-google-cloud-dataflow-java" % beamVersion,
     "org.slf4j" % "slf4j-simple" % "1.7.25"
   )
 ).enablePlugins(PackPlugin)
