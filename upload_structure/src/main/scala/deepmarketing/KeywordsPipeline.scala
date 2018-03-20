@@ -21,6 +21,17 @@ object KeywordsPipeline {
 
     val inputFacets = getInputKeywords()
 
+    // example of use:
+    val keywordsAndMatchTypes = inputFacets
+      //.map(_.map(_.field.get).mkString(" "))
+      .flatMap(row => {
+        val text = row.map(_.field.get).mkString(" ")
+        val url = s"http://blablalbal${row.map(_.url_value.get).mkString("&")}"
+      Seq(Keyword(text, "BRD", url),
+          Keyword(text, "EXT", url),
+          Keyword(text, "PHR", url))
+    })
+
     //val negatives = Negatives.transform(keywords)
     //negatives.saveAsAvroFile("negativesPath")
 
@@ -42,6 +53,14 @@ object KeywordsPipeline {
 
   // Word Count:
   /*
+
+  List(
+
+     "badalona venta vivienda",
+
+     )
+
+
   val exampleData = "gs://dataflow-samples/shakespeare/kinglear.txt"
   val input = args.getOrElse("input", exampleData)
   val output = args("output")
