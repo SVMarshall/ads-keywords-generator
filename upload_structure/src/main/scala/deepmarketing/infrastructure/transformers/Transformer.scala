@@ -1,4 +1,4 @@
-package deepmarketing.structure.transformers
+package deepmarketing.infrastructure.transformers
 
 import com.spotify.scio.values.SCollection
 

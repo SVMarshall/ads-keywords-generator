@@ -1,10 +1,11 @@
 package deepmarketing
 
 import com.spotify.scio._
-import com.spotify.scio.bigquery._
 import com.spotify.scio.values.SCollection
 import com.spotify.scio.bigquery.BigQueryClient
-import deepmarketing.structure.{Adgroup, BaseAdgroups, Negatives, Negative}
+import deepmarketing.infrastructure.repositories._
+import deepmarketing.domain.{Negative, AdGroup}
+
 
 /*
 sbt "runMain [PACKAGE].KeywordsPipeline
@@ -13,15 +14,20 @@ sbt "runMain [PACKAGE].KeywordsPipeline
   --output=gs://[BUCKET]/[PATH]/wordcount"
 */
 
-
 object KeywordsPipeline {
 
   def main(cmdlineArgs: Array[String]): Unit = {
     implicit val (sc, args) = ContextAndArgs(cmdlineArgs)
 
-    val baseAdgroups: SCollection[Adgroup] = BaseAdgroups.get()
+    val bq: BigQueryClient = BigQueryClient.defaultInstance()
 
-    val negatives = SCollection[Negative] = Negatives.get(baseAdgroups)
+    val baseAdGroups: SCollection[AdGroup] =
+      AdGroupRepository.generateAdGroupsFromInputFacets(InputFacetsRepository.getInputFacets(sc, bq))
+    //val baseAdGroups = AdGroupRepository.generateTestAdGroups(sc)
+    val negatives: SCollection[(String, Seq[Negative])] = NegativeRepository.generateNegatives(baseAdGroups)
+
+    negatives.saveAsTextFile("gs://adwords-dataflow/keywords")
+    sc.close()
+
   }
-
 }
