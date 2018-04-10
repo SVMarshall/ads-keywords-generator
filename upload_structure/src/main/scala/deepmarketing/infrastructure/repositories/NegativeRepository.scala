@@ -1,7 +1,7 @@
 package deepmarketing.infrastructure.repositories
 
 import com.spotify.scio.values.SCollection
-import deepmarketing.domain.{Negative, AdGroup}
+import deepmarketing.domain.{AdGroup, Keyword, MatchType, Negative}
 
 object NegativeRepository {
 
@@ -36,6 +36,16 @@ object NegativeRepository {
           Seq()
         }
       }).aggregateByKey(Seq[Negative]())(_ :+ _, _ ++ _)
+  }
+
+  def getBasicNegativesAdGroupLevel(keyword: Keyword): Seq[Negative] = {
+    if (keyword.matchType.text == "BRD") {
+      Seq(Keyword(keyword.text, new MatchType("PHR")).toNegative)
+    } else if (keyword.matchType.text == "PHR") {
+      Seq(Keyword(keyword.text, new MatchType("EXT")).toNegative)
+    } else {
+      Seq()
+    }
   }
 }
 

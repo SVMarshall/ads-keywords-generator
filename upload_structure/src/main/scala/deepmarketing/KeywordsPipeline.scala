@@ -1,10 +1,10 @@
 package deepmarketing
 
 import com.spotify.scio._
-import com.spotify.scio.values.SCollection
 import com.spotify.scio.bigquery.BigQueryClient
+import com.spotify.scio.values.SCollection
+import deepmarketing.domain.{AdGroup, Negative}
 import deepmarketing.infrastructure.repositories._
-import deepmarketing.domain.{Negative, AdGroup}
 
 
 /*

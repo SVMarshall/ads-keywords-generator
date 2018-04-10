@@ -2,20 +2,29 @@ package deepmarketing.infrastructure.repositories
 
 import com.spotify.scio.ScioContext
 import com.spotify.scio.values.SCollection
-import deepmarketing.domain.{Keyword, MatchType, AdGroup}
+import deepmarketing.domain.{AdGroup, Keyword, MatchType}
 import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFacetsRow
 
 object AdGroupRepository {
 
-  def generateAdGroupsFromInputFacets(inputFacets: SCollection[Seq[InputFacetsRow]]): SCollection[AdGroup] = {
+  def generateAdGroupsFromInputFacets(
+                                       inputFacets: SCollection[Seq[InputFacetsRow]],
+                                       matchType: MatchType): SCollection[AdGroup] = {
     inputFacets
-      .flatMap(row => {
-        createAdgroupsForAllMatchTypes(generateKeywordText(row), generateUrlLandingString(row))
+      .map(row => {
+        val text: String = generateKeywordText(row)
+        val keyword: Keyword = Keyword(text, matchType)
+        AdGroup(s"$text|$matchType",
+          generateUrlLandingString(row),
+          keyword,
+          NegativeRepository.getBasicNegativesAdGroupLevel(keyword))
       })
   }
 
   private def generateKeywordText(row: Seq[InputFacetsRow]): String = {
-    row.map(_.field.get).mkString(" ")
+    row.map(inputFacet => {
+      if(inputFacet.field.get == "none") "" else inputFacet.field.get
+    }).mkString(" ")
   }
 
   private def generateUrlLandingString(row: Seq[InputFacetsRow]): String = {
@@ -24,11 +33,6 @@ object AdGroupRepository {
     }).mkString("&")
   }
 
-  private def createAdgroupsForAllMatchTypes(text: String, url: String) = {
-    Seq("BRD", "EXT", "PHR").map(matchType => {
-      AdGroup(s"$text|$matchType", url, Keyword(text, new MatchType(matchType)), Seq())
-    })
-  }
 
   def generateTestAdGroups(sc: ScioContext): SCollection[AdGroup] = {
     sc.parallelize(
