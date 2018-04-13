@@ -1,5 +1,14 @@
 package deepmarketing.domain
 
-case class Keyword(text: String, matchType: MatchType) extends KeywordGeneric {
-  def toNegative: Negative = Negative(text, matchType)
+import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFacet
+
+case class Keyword(inputFacets: Seq[InputFacet],
+                   criteria: String,
+                   matchType: MatchType,
+                   adGroupName: String,
+                   campaignName: String,
+                   ads: Seq[Ad] = Seq()) {
+  def addAds(ads: Seq[Ad]): Keyword = {
+    this.copy(ads = ads)
+  }
 }

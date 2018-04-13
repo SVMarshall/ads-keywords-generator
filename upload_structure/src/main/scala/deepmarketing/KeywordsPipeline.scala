@@ -3,9 +3,10 @@ package deepmarketing
 import com.spotify.scio._
 import com.spotify.scio.bigquery.BigQueryClient
 import com.spotify.scio.values.SCollection
-import deepmarketing.domain.{AdGroup, Negative}
+import deepmarketing.domain.Keyword
+import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFacet
 import deepmarketing.infrastructure.repositories._
-
+import deepmarketing.services.{AdService, KeywordService}
 
 /*
 sbt "runMain [PACKAGE].KeywordsPipeline
@@ -21,13 +22,23 @@ object KeywordsPipeline {
 
     val bq: BigQueryClient = BigQueryClient.defaultInstance()
 
-    val baseAdGroups: SCollection[AdGroup] =
-      AdGroupRepository.generateAdGroupsFromInputFacets(InputFacetsRepository.getInputFacets(sc, bq))
+    //Get Input Facets
+    //Create Keywords
+    //Generate Adgroup Name
+    //Generate Campaign Name
+    //Generate Ads
+
     //val baseAdGroups = AdGroupRepository.generateTestAdGroups(sc)
-    val negatives: SCollection[(String, Seq[Negative])] = NegativeRepository.generateNegatives(baseAdGroups)
+    //val negatives: SCollection[(String, Seq[Negative])] = NegativeRepository.generateNegatives(baseAdGroups)
+    //Get Negatives
 
-    negatives.saveAsTextFile("gs://adwords-dataflow/keywords")
+    val inputFacets: SCollection[Seq[InputFacet]] = InputFacetsRepository.getInputFacets(sc, bq)
+
+    val keywords: SCollection[Keyword] = KeywordService.generateKeywordsFromInputFacets(inputFacets)
+
+    val keywordsWithAds = AdService.addAds(keywords)
+    keywordsWithAds.map(_.ads.head).saveAsTextFile("gs://adwords-dataflow/ads")
+
     sc.close()
-
   }
 }
