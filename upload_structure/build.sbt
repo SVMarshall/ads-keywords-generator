@@ -40,6 +40,7 @@ lazy val root: Project = Project(
   libraryDependencies ++= Seq(
     "com.spotify" %% "scio-core" % scioVersion,
     "com.spotify" %% "scio-test" % scioVersion % "test",
+    "com.spotify" %% "scio-repl" % scioVersion,
     // optional direct runner
     //"org.apache.beam" % "beam-runners-spark" % beamVersion,
     "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
