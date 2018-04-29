@@ -43,7 +43,7 @@ object KeywordsPipeline {
     val negatives: SCollection[Negative] = NegativeService.generateNegatives(keywords)
 
     keywords.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/keywords")
-    ads.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/negatives")
+    ads.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/ads")
     negatives.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/negatives")
 
     sc.close()
