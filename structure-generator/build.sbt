@@ -32,16 +32,16 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val utils = project
-  .settings(
-    commonSettings ++ macroSettings ++ noPublishSettings,
-    name := "utils",
-    libraryDependencies ++= Seq(
-      "com.google.api-client" % "google-api-client" % "1.23.0",
-      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0",
-      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.23.0"
-    )
-  )
+//lazy val utils = project
+//  .settings(
+//    commonSettings ++ macroSettings ++ noPublishSettings,
+//    name := "utils",
+//    libraryDependencies ++= Seq(
+//      "com.google.api-client" % "google-api-client" % "1.23.0",
+//      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0",
+//      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.23.0"
+//    )
+//  )
 
 lazy val root: Project = Project("structure-generator", file("."))
   .settings(
@@ -56,8 +56,11 @@ lazy val root: Project = Project("structure-generator", file("."))
       "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
       // optional dataflow runner
       "org.apache.beam" % "beam-runners-google-cloud-dataflow-java" % beamVersion,
-      "org.slf4j" % "slf4j-simple" % "1.7.25"))
-  .dependsOn(utils)
+      "org.slf4j" % "slf4j-simple" % "1.7.25",
+      "com.google.api-client" % "google-api-client" % "1.23.0",
+      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0",
+      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.23.0"))
+  //.dependsOn(utils)
   .enablePlugins(PackPlugin)
 
 lazy val repl: Project = Project(

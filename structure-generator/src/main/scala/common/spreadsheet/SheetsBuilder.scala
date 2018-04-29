@@ -1,4 +1,6 @@
-package spreadsheet
+package common.spreadsheet
+
+import common.Streams
 
 import java.io.FileNotFoundException
 
@@ -8,7 +10,6 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.{Sheets, SheetsScopes}
 import com.google.common.base.Preconditions
-import common.Streams
 
 import scala.collection.JavaConverters._
 
