@@ -45,7 +45,6 @@ object KeywordsPipeline {
     val keywords: SCollection[Keyword] = KeywordService.generateKeywordsFromInputFacets(inputFacets)
     val ads: SCollection[Ad] = AdService.generateAds(keywords)
     val negatives: SCollection[Negative] = NegativeService.generateNegatives(keywords)
-
     //keywords.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/keywords")
     //negatives.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/negatives")
     //negatives.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/negatives")
@@ -53,6 +52,7 @@ object KeywordsPipeline {
     keywords.saveAsObjectFile(s"${execPath}/keywords")
     negatives.saveAsObjectFile(s"${execPath}/negatives")
     ads.saveAsObjectFile(s"${execPath}/ads")
+
 
     sc.close()
   }
