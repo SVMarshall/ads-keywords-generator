@@ -57,9 +57,16 @@ lazy val root: Project = Project("structure-generator", file("."))
       // optional dataflow runner
       "org.apache.beam" % "beam-runners-google-cloud-dataflow-java" % beamVersion,
       "org.slf4j" % "slf4j-simple" % "1.7.25",
-      "com.google.api-client" % "google-api-client" % "1.23.0",
-      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0",
-      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.23.0"))
+
+      // spreadsheets api
+      //"com.google.api-client" % "google-api-client" % "1.23.0",  // 1.23 breaks apache beam :(
+      "com.google.api-client" % "google-api-client" % "1.22.0",
+      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0",
+      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.22.0"
+
+      // avro schemas for scala
+      //"com.sksamuel.avro4s" %% "avro4s-core" % "1.8.3"
+      ))
   //.dependsOn(utils)
   .enablePlugins(PackPlugin)
 

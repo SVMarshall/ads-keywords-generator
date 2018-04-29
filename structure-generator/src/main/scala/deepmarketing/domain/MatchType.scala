@@ -1,6 +1,6 @@
 package deepmarketing.domain
 
-class MatchType(t: String) {
+case class MatchType(t: String) {
 
   val text: String = t
   private val matchTypesHierarchy: Map[String, Int] = Map("BRD" -> 1, "PHR" -> 2, "EXT" -> 3)
