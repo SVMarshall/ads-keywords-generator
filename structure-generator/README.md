@@ -1,4 +1,4 @@
-# upload_structure
+# Structure Generator
 
 ## Raison d'être:
 

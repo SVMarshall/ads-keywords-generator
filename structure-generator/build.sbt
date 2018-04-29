@@ -16,6 +16,7 @@ lazy val commonSettings = Defaults.coreDefaultSettings ++ Seq(
                                 "-unchecked"),
   javacOptions          ++= Seq("-source", "1.8",
                                 "-target", "1.8")
+  //resolvers += "mvnrepository.com" at "http://central.maven.org/maven2/"
 )
 
 lazy val paradiseDependency =
@@ -31,31 +32,40 @@ lazy val noPublishSettings = Seq(
   publishArtifact := false
 )
 
-lazy val root: Project = Project(
-  "upload_structure",
-  file(".")
-).settings(
-  commonSettings ++ macroSettings ++ noPublishSettings,
-  description := "upload_structure",
-  libraryDependencies ++= Seq(
-    "com.spotify" %% "scio-core" % scioVersion,
-    "com.spotify" %% "scio-test" % scioVersion % "test",
-    "com.spotify" %% "scio-repl" % scioVersion,
-    // optional direct runner
-    //"org.apache.beam" % "beam-runners-spark" % beamVersion,
-    "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
-    // optional dataflow runner
-    "org.apache.beam" % "beam-runners-google-cloud-dataflow-java" % beamVersion,
-    "org.slf4j" % "slf4j-simple" % "1.7.25"
+lazy val utils = project
+  .settings(
+    commonSettings ++ macroSettings ++ noPublishSettings,
+    name := "utils",
+    libraryDependencies ++= Seq(
+      "com.google.api-client" % "google-api-client" % "1.23.0",
+      "com.google.oauth-client" % "google-oauth-client-jetty" % "1.23.0",
+      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.23.0"
+    )
   )
-).enablePlugins(PackPlugin)
+
+lazy val root: Project = Project("structure-generator", file("."))
+  .settings(
+    commonSettings ++ macroSettings ++ noPublishSettings,
+    description := "structure-generator",
+    libraryDependencies ++= Seq(
+      "com.spotify" %% "scio-core" % scioVersion,
+      "com.spotify" %% "scio-test" % scioVersion % "test",
+      "com.spotify" %% "scio-repl" % scioVersion,
+      // optional direct runner
+      //"org.apache.beam" % "beam-runners-spark" % beamVersion,
+      "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
+      // optional dataflow runner
+      "org.apache.beam" % "beam-runners-google-cloud-dataflow-java" % beamVersion,
+      "org.slf4j" % "slf4j-simple" % "1.7.25"))
+  .dependsOn(utils)
+  .enablePlugins(PackPlugin)
 
 lazy val repl: Project = Project(
   "repl",
   file(".repl")
 ).settings(
   commonSettings ++ macroSettings ++ noPublishSettings,
-  description := "Scio REPL for upload_structure",
+  description := "Scio REPL for structure generator",
   libraryDependencies ++= Seq(
     "com.spotify" %% "scio-repl" % scioVersion
   ),
