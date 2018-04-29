@@ -1,14 +1,12 @@
 package deepmarketing
 
 import com.spotify.scio._
-import com.spotify.scio.repl.IoCommands
 import com.spotify.scio.bigquery.BigQueryClient
 import com.spotify.scio.values.SCollection
-import deepmarketing.domain.{Ad, Keyword}
+import deepmarketing.domain.{Ad, Keyword, Negative}
 import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFacet
 import deepmarketing.infrastructure.repositories._
-import deepmarketing.services.{AdService, KeywordService}
-import kantan.csv.RowEncoder
+import deepmarketing.services.{AdService, KeywordService, NegativeService}
 
 /*
 sbt "runMain [PACKAGE].KeywordsPipeline
@@ -33,19 +31,21 @@ object KeywordsPipeline {
     //val baseAdGroups = AdGroupRepository.generateTestAdGroups(sc)
     //val negatives: SCollection[(String, Seq[Negative])] = NegativeRepository.generateNegatives(baseAdGroups)
     //Get Negatives
+    //    keywordsWithAds.map(_.ads.head).saveAsTextFile("gs://adwords-dataflow/ads")
+    //    val io: IoCommands = new IoCommands(sc.options)
+    //implicit val personEncoder: RowEncoder[Person] = RowEncoder.caseEncoder(0, 2, 1)(Person.unapply)
+    //    implicit val adEncoder: RowEncoder[Ad] = RowEncoder.caseEncoder(0,1,2,3)(Ad.unapply)
+    //    io.writeCsv[Ad]("gs://adwords-dataflow/keywords", keywordsWithAds.flatMap(_.ads));
 
     val inputFacets: SCollection[Seq[InputFacet]] = InputFacetsRepository.getInputFacets(sc, bq)
     val keywords: SCollection[Keyword] = KeywordService.generateKeywordsFromInputFacets(inputFacets)
-    val keywordsWithAds: SCollection[Keyword] = AdService.addAds(keywords)
-//    keywordsWithAds.map(_.ads.head).saveAsTextFile("gs://adwords-dataflow/ads")
+    val ads: SCollection[Ad] = AdService.generateAds(keywords)
+    val negatives: SCollection[Negative] = NegativeService.generateNegatives(keywords)
 
-    val io: IoCommands = new IoCommands(sc.options)
+    keywords.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/keywords")
+    ads.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/negatives")
+    negatives.map(_.csvEncode()).saveAsTextFile("gs://adwords-dataflow/negatives")
 
-    //implicit val personEncoder: RowEncoder[Person] = RowEncoder.caseEncoder(0, 2, 1)(Person.unapply)
-
-    implicit val adEncoder: RowEncoder[Ad] = RowEncoder.caseEncoder(0,1,2,3)(Ad.unapply)
-
-    keywordsWithAds.map(keyword => io.writeCsv[Ad]("gs://adwords-dataflow/keywords", keyword.ads))
     sc.close()
   }
 }

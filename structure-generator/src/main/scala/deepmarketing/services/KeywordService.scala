@@ -23,7 +23,7 @@ object KeywordService {
         criteria,
         new MatchType(matchType),
         s"$criteria|$matchType",
-        inputFacets.map(_.main_facet.getOrElse(None)).mkString(" ")
+        inputFacets.map(_.main_facet.getOrElse("")).mkString(" ")
       )
     })
   }

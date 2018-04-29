@@ -1,59 +1,24 @@
-//package deepmarketing.infrastructure.repositories
-//
-//import com.spotify.scio.values.SCollection
-//import deepmarketing.domain.{AdGroup, Keyword, MatchType, Negative}
-//
-//object NegativeRepository {
-//
-//  def generateNegatives(adGroups: SCollection[AdGroup]): SCollection[(String, Seq[Negative])] = {
-//
-//    val commonJoinKey: Int = 1
-//    val adGroupsMap: SCollection[(Int, AdGroup)] =
-//      adGroups.map((commonJoinKey, _))
-//
-//    adGroupsMap
-//      .join(adGroupsMap)
-//      .flatMap(keyValueAdGroups => {
-//        val adGroup = keyValueAdGroups._2._1
-//        val joinAdGroup = keyValueAdGroups._2._2
-//
-//        if (joinAdGroup.keyword.text.contains(adGroup.keyword.text)) {
-//          if (joinAdGroup.keyword.text == adGroup.keyword.text) {
-//            if (joinAdGroup.keyword.matchType > adGroup.keyword.matchType) {
-//              Seq((adGroup.name, joinAdGroup.keyword.toNegative))
-//            } else {
-//              Seq()
-//            }
-//          } else {
-//            if (joinAdGroup.keyword.matchType.text != "BRD"
-//              & joinAdGroup.keyword.matchType.isGreaterOrEqual(adGroup.keyword.matchType)) {
-//              Seq((adGroup.name, joinAdGroup.keyword.toNegative))
-//            } else {
-//              Seq()
-//            }
-//          }
-//        } else {
-//          Seq()
-//        }
-//      }).aggregateByKey(Seq[Negative]())(_ :+ _, _ ++ _)
-//  }
-//
-//  def getBasicNegativesAdGroupLevel(keyword: Keyword): Seq[Negative] = {
-//    if (keyword.matchType.text == "BRD") {
-//      Seq(Keyword(keyword.text, new MatchType("PHR")).toNegative)
-//    } else if (keyword.matchType.text == "PHR") {
-//      Seq(Keyword(keyword.text, new MatchType("EXT")).toNegative)
-//    } else {
-//      Seq()
-//    }
-//  }
-//}
-//
-//// bcn casa | phr
-//// comprar bcn casa 3 hab | brd      bcn casa ext
-//// bcn casa piscina
-//// bcn casa piscina balcon
-//// bcn casa piscina atico
-//// bcn casa piscina caca
-//
-//
+package deepmarketing.services
+
+import com.spotify.scio.values.SCollection
+import deepmarketing.domain.{Keyword, MatchType, Negative}
+
+object NegativeService {
+
+  def generateNegatives(keywords: SCollection[Keyword]): SCollection[Negative] = {
+    keywords.flatMap(keyword => getBasicNegativesAdGroupLevel(keyword))
+  }
+
+  def getBasicNegativesAdGroupLevel(keyword: Keyword): Seq[Negative] = {
+    if (keyword.matchType.text == "BROAD") {
+      Seq(
+        Negative(keyword.criteria, new MatchType("PHRASE"), keyword.adGroupName),
+        Negative(keyword.criteria, new MatchType("EXACT"), keyword.adGroupName)
+      )
+    } else if (keyword.matchType.text == "PHRASE") {
+      Seq(Negative(keyword.criteria, new MatchType("EXACT"), keyword.adGroupName))
+    } else {
+      Seq()
+    }
+  }
+}

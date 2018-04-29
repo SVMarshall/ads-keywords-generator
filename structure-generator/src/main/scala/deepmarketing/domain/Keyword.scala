@@ -11,4 +11,8 @@ case class Keyword(inputFacets: Seq[InputFacet],
   def addAds(ads: Seq[Ad]): Keyword = {
     this.copy(ads = ads)
   }
+
+  def csvEncode(): String = {
+    Seq(criteria, matchType.text, campaignName, adGroupName).map("\"" + _ + "\"").mkString(",")
+  }
 }
