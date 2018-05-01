@@ -1,8 +1,7 @@
 package deepmarketing.domain
 
-case class MatchType(t: String) {
+case class MatchType(text: String) {
 
-  val text: String = t
   private val matchTypesHierarchy: Map[String, Int] = Map("BRD" -> 1, "PHR" -> 2, "EXT" -> 3)
 
   def isGreaterOrEqual(matchTypeCompare: MatchType): Boolean = {
