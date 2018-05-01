@@ -21,7 +21,7 @@ object KeywordService {
       Keyword(
         inputFacets,
         criteria,
-        new MatchType(matchType),
+        MatchType(matchType),
         s"$criteria|$matchType",
         inputFacets.map(_.main_facet.getOrElse("")).mkString(" ")
       )

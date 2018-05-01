@@ -12,11 +12,11 @@ object NegativeService {
   def getBasicNegativesAdGroupLevel(keyword: Keyword): Seq[Negative] = {
     if (keyword.matchType.text == "BROAD") {
       Seq(
-        Negative(keyword.criteria, new MatchType("PHRASE"), keyword.adGroupName),
-        Negative(keyword.criteria, new MatchType("EXACT"), keyword.adGroupName)
+        Negative(keyword.criteria, MatchType("PHRASE"), keyword.adGroupName),
+        Negative(keyword.criteria, MatchType("EXACT"), keyword.adGroupName)
       )
     } else if (keyword.matchType.text == "PHRASE") {
-      Seq(Negative(keyword.criteria, new MatchType("EXACT"), keyword.adGroupName))
+      Seq(Negative(keyword.criteria, MatchType("EXACT"), keyword.adGroupName))
     } else {
       Seq()
     }
