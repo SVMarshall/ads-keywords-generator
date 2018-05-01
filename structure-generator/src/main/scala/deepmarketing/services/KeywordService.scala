@@ -16,14 +16,14 @@ object KeywordService {
   }
 
   private def createKeywordsForAllMatchTypes(inputFacets: Seq[InputFacet]): Seq[Keyword] = {
-    Seq("BROAD", "PHRASE", "EXACT").map(matchType => {
+    Seq("BROAD", /*"PHRASE", */"EXACT").map(matchType => {
       val criteria: String = generateKeywordCriteria(inputFacets)
       Keyword(
         inputFacets,
         criteria,
         MatchType(matchType),
         s"$criteria|$matchType",
-        inputFacets.map(_.main_facet.getOrElse("")).mkString(" ")
+        inputFacets.map(_.main_facet.getOrElse("")).mkString(" ").trim
       )
     })
   }
@@ -31,6 +31,6 @@ object KeywordService {
   private def generateKeywordCriteria(row: Seq[InputFacet]): String = {
     row.map(inputFacet => {
       if (inputFacet.field.get == "none") "" else inputFacet.field.get
-    }).mkString(" ")
+    }).mkString(" ").trim
   }
 }

@@ -24,12 +24,12 @@ object KeywordsPipeline {
 
     val bq: BigQueryClient = BigQueryClient.defaultInstance()
     val date = DateTime.now()
-    val execPath = s"gs://adwords-dataflow/keywords/structure-generator/exec/${date.toTimestamp}"
+    val execPath = s"gs://adwords-dataflow/structure-generator/exec/${date.toTimestamp}"
 
     val inputFacets: SCollection[Seq[InputFacet]] = InputFacetsRepository.getInputFacets(sc, bq)
-    val keywords: SCollection[Keyword] = KeywordService.generateKeywordsFromInputFacets(inputFacets)
-    val ads: SCollection[Ad] = AdService.generateAds(keywords)
-    val negatives: SCollection[Negative] = NegativeService.generateNegatives(keywords)
+    val keywords: SCollection[Keyword] = getKeywords(inputFacets)
+    val ads: SCollection[Ad] = getAds(keywords)
+    val negatives: SCollection[Negative] = getNegatives(keywords)
 
 
     keywords.saveAsObjectFile(s"$execPath/keywords")
@@ -37,5 +37,21 @@ object KeywordsPipeline {
     ads.saveAsObjectFile(s"$execPath/ads")
 
     sc.close()
+  }
+
+  def getInputFacets(sc: ScioContext, bq: BigQueryClient): SCollection[Seq[InputFacet]] = {
+    InputFacetsRepository.getInputFacets(sc, bq)
+  }
+
+  def getKeywords(inputFacets: SCollection[Seq[InputFacet]]): SCollection[Keyword] = {
+    KeywordService.generateKeywordsFromInputFacets(inputFacets)
+  }
+
+  def getAds(keywords: SCollection[Keyword]): SCollection[Ad] = {
+    AdService.generateAds(keywords)
+  }
+
+  def getNegatives(keywords: SCollection[Keyword]): SCollection[Negative] = {
+    NegativeService.generateNegatives(keywords)
   }
 }

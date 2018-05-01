@@ -22,7 +22,8 @@ object AdService {
         template.replaceTagsInDescription(keyword.getInputFacets),
         template.replaceTagsInUrl1(keyword.getInputFacets),
         template.replaceTagsInUrl2(keyword.getInputFacets),
-        keyword.adGroupName
+        keyword.adGroupName,
+        "finalUrls TODO"  //TODO
       )
     })
   }
