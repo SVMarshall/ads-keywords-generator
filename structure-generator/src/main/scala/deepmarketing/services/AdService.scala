@@ -23,8 +23,13 @@ object AdService {
         template.replaceTagsInUrl1(keyword.getInputFacets),
         template.replaceTagsInUrl2(keyword.getInputFacets),
         keyword.adGroupName,
-        "finalUrls TODO"  //TODO
+        getFinalUrl(keyword)//TODO
       )
     })
+  }
+
+  private def getFinalUrl(keyword: Keyword): String = {
+    val baseUrl: String = "https://www.trovimap.com/Compra/Vivienda/Barcelona/Barcelona"
+    if (keyword.getGeo.isEmpty) baseUrl + "/?"  else baseUrl + "/" + keyword.getGeo.replaceAll(" ", "-") + ",Barcelona"
   }
 }
