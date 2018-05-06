@@ -4,11 +4,17 @@ import com.spotify.scio._
 import com.spotify.scio.bigquery.BigQueryClient
 import com.spotify.scio.values.SCollection
 import common.implicits.DateTimeFormatters._
+import deepmarketing.KeywordsPipeline.log
 import deepmarketing.domain.Keyword
 import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
+
+import scala.concurrent.duration.MINUTES
 
 
 object AdwordsUploaderPipeline {
+
+  val log = LoggerFactory.getLogger(this.getClass)
 
   def main(cmdlineArgs: Array[String]): Unit = {
     implicit val (sc, args) = ContextAndArgs(cmdlineArgs)
@@ -17,9 +23,9 @@ object AdwordsUploaderPipeline {
     val date = DateTime.now()
     val execPath = s"gs://adwords-dataflow/structure-uploader/exec/${date.toTimestamp}"
 
-    //val generatedSructureTimestamp = args("generatedSructureTimestamp")
-    val generatedSructureTimestamp = "20180501174244"
-
+    val generatedSructureTimestamp = args("generatedSructureTimestamp")
+    //val generatedSructureTimestamp = "20180501174244"
+    log.info(s"generatedSructureTimestamp = ${generatedSructureTimestamp}")
 
     // read from structure generation
     // val genStructureExecPath = "gs://adwords-dataflow/structure-generator/exec/20180501174244"
@@ -32,7 +38,26 @@ object AdwordsUploaderPipeline {
     KeywordsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"${execPath}/keywords")
     AdsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"${execPath}/ads")
 
-    sc.close
+    sc.close().waitUntilDone(60, MINUTES)
+    log.info("Pipeline finished")
+
+    // marge files to get a single csv; temporary workaround until we upload changes through Adwords API
+    def composeCsv(timestamp: String, structureField : String) = {
+      import sys.process._
+      val headersFile = s"gs://adwords-dataflow/structure-uploader/headers/${structureField}_header.txt"
+      val structureFiles = s"gs://adwords-dataflow/structure-uploader/exec/${timestamp}/${structureField}s/*"
+      val structureOutput = s"gs://adwords-dataflow/structure-uploader/csv/${timestamp}/${structureField}s.csv"
+      val composeCommand = "gsutil compose " + headersFile + " " + structureFiles + " " + structureOutput
+      //log.info("Compose command: " + composeCommand)
+      println("Compose command: " + composeCommand)
+      val composeExec = composeCommand.!
+      //log.info("Compose Command output:" + composeExec)
+      println("Compose Command output:" + composeExec)
+    }
+    composeCsv(date.toTimestamp, "campaign")
+    composeCsv(date.toTimestamp, "adgroup")
+    composeCsv(date.toTimestamp, "ad")
+    composeCsv(date.toTimestamp, "keyword")
   }
 
   case class CampaignAdwordsFields(accountName: String, campaignState: String, campaign: String, budget: String,
@@ -92,7 +117,6 @@ object AdwordsUploaderPipeline {
   case class KeywordAdwordsFields(accountName: String, campaign: String, adgroup: String, adgroupState: String,
                                   keyword: String, matchType: String, maxCpc: String, keywordState: String) {
     override def toString: String =
-    // keyword state,campaign,ad group,ad group state,keyword,match type,max. cpc
       Seq(/*accountName, campaign, */keywordState, campaign, adgroup, adgroupState, keyword, matchType, maxCpc)
         .map("\"" + _ + "\"").mkString(",")
   }
@@ -122,7 +146,6 @@ object AdwordsUploaderPipeline {
   }
 
   object AdsAdwordsFieldsBuilder {
-    // campaign	- ad group	- headline 1	- headline 2	- description	- path 1	- path 2	- final url
     val header = Seq("account name", "campaign", "ad group", "headline 1",
                      "headline 2", "description", "path 1", "path 2", "final url")
     def getFields(keywords: SCollection[Keyword]): SCollection[String] = {

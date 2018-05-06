@@ -9,6 +9,9 @@ import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFace
 import deepmarketing.infrastructure.repositories._
 import deepmarketing.services.{AdService, KeywordService, NegativeService}
 import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
+
+import scala.concurrent.duration._
 
 /*
 sbt "runMain [PACKAGE].KeywordsPipeline
@@ -18,6 +21,8 @@ sbt "runMain [PACKAGE].KeywordsPipeline
 */
 
 object KeywordsPipeline {
+
+  val log = LoggerFactory.getLogger(this.getClass)
 
   def main(cmdlineArgs: Array[String]): Unit = {
     implicit val (sc, args) = ContextAndArgs(cmdlineArgs)
@@ -36,7 +41,7 @@ object KeywordsPipeline {
     negatives.saveAsObjectFile(s"$execPath/negatives")
     ads.saveAsObjectFile(s"$execPath/ads")
 
-    sc.close()
+    sc.close().waitUntilDone(60, MINUTES)
   }
 
   def getInputFacets(sc: ScioContext, bq: BigQueryClient): SCollection[Seq[InputFacet]] = {
