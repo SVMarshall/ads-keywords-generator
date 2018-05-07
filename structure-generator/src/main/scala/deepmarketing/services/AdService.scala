@@ -1,7 +1,7 @@
 package deepmarketing.services
 
 import com.spotify.scio.values.SCollection
-import deepmarketing.domain.{Ad, AdTemplate, Keyword}
+import deepmarketing.domain.{Ad, AdTemplate, FinalUrl, Keyword}
 import deepmarketing.infrastructure.repositories.AdTemplatesRepository
 
 
@@ -23,13 +23,10 @@ object AdService {
         template.replaceTagsInUrl1(keyword.getInputFacets),
         template.replaceTagsInUrl2(keyword.getInputFacets),
         keyword.adGroupName,
-        getFinalUrl(keyword)//TODO
+        FinalUrl(keyword).composeUrl
       )
     })
   }
 
-  private def getFinalUrl(keyword: Keyword): String = {
-    val baseUrl: String = "https://www.trovimap.com/Compra/Vivienda/Barcelona/Barcelona"
-    if (keyword.getGeo.isEmpty) baseUrl + "/?"  else baseUrl + "/" + keyword.getGeo.replaceAll(" ", "-") + ",Barcelona"
-  }
+
 }

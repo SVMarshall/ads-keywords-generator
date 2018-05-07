@@ -1,7 +1,5 @@
 package deepmarketing.domain
 
-import java.io
-
 import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFacet
 
 //object Keyword {
@@ -21,8 +19,8 @@ case class Keyword(inputFacets: Seq[InputFacet],
   }
 
   def getGeo: String = {
-    val geo: String  = this.inputFacets.filter(_.facet.get == "geo").head.field.get
-    if(geo == "none") "" else geo
+    val geo: String = this.inputFacets.filter(_.facet.get == "geo").head.field.get
+    if (geo == "none") "" else geo
   }
 }
 
