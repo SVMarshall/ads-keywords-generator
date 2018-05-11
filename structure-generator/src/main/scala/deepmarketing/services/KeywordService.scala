@@ -1,13 +1,11 @@
 package deepmarketing.services
 
 import com.spotify.scio.values.SCollection
-import deepmarketing.domain.{Keyword, MatchType}
-import deepmarketing.infrastructure.repositories.InputFacetsRepository
-import deepmarketing.infrastructure.repositories.InputFacetsRepository.InputFacet
+import deepmarketing.domain.{InputFacet, Keyword, MatchType}
 
 object KeywordService {
 
-  def generateKeywordsFromInputFacets(inputFacetsList: SCollection[Seq[InputFacetsRepository.InputFacet]])
+  def generateKeywordsFromInputFacets(inputFacetsList: SCollection[Seq[InputFacet]])
   : SCollection[Keyword] = {
     inputFacetsList
       .flatMap(inputFacets => {
@@ -23,14 +21,14 @@ object KeywordService {
         criteria,
         MatchType(matchType),
         s"$criteria|$matchType",
-        inputFacets.map(_.main_facet.getOrElse("")).mkString(" ").trim
+        inputFacets.map(_.main_facet).mkString(" ").trim
       )
     })
   }
 
   private def generateKeywordCriteria(row: Seq[InputFacet]): String = {
     row.map(inputFacet => {
-      if (inputFacet.field.get == "none") "" else inputFacet.field.get
+      if (inputFacet.field == "none") "" else inputFacet.field
     }).mkString(" ").trim
   }
 }

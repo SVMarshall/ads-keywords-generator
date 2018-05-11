@@ -17,6 +17,8 @@ case class FinalUrl(keyword: Keyword) {
   }
 
   private def addInputFacetsToUrl(baseUrl: String): String = {
-    keyword.getInputFacets.map(inputFacet => {inputFacet.url_name + "=" + inputFacet.url_value}).mkString("&")
+    keyword.getInputFacets.map(inputFacet => {
+      if (inputFacet.url_value.isEmpty) inputFacet.url_name + "=" + inputFacet.url_value
+    }).mkString("&")
   }
 }

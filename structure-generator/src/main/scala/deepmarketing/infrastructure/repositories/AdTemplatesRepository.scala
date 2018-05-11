@@ -1,24 +1,19 @@
 package deepmarketing.infrastructure.repositories
 
-import common.spreadsheet.SheetsBuilder
-import deepmarketing.domain.{AdTemplate, Keyword}
-
+import deepmarketing.domain.{AdTemplate, InputFacet, Keyword}
 
 object AdTemplatesRepository {
 
-  lazy val adTemplatesValues: List[List[String]] =
-    SheetsBuilder.build("1bNG0OfnuCMSiJVnMfZssCUEJlQXWPphUKCovedFcTpE").getValues("ad_config", "A2:F1000000")
 
-  lazy val header: List[String] =
-    SheetsBuilder.build("1bNG0OfnuCMSiJVnMfZssCUEJlQXWPphUKCovedFcTpE").getValues("ad_config", "A1:F1").head
+  def getAdTemplatesForKeyword(keyword: Keyword,
+                               adTemplatesValues: List[List[String]],
+                               header: List[String]): Seq[AdTemplate] = {
 
-  def getAdTemplatesForKeyword(keyword: Keyword): Seq[AdTemplate] = {
-
-    val inputFacets: Seq[InputFacetsRepository.InputFacet] = keyword.getInputFacets
+    val inputFacets: Seq[InputFacet] = keyword.getInputFacets
 
     adTemplatesValues
       // Filter the templates that contain the right input facets
-      .filter(_.head.split("\\+").map(_.trim.toLowerCase).toSet == inputFacets.map(_.facet.get).toSet)
+      .filter(_.head.split("\\+").map(_.trim.toLowerCase).toSet == inputFacets.map(_.facet).toSet)
       //Create the AdTemplates
       .map(
       adTemplateValues => {

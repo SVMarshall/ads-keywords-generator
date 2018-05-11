@@ -1,20 +1,18 @@
 package deepmarketing
 
 import com.spotify.scio._
-import com.spotify.scio.bigquery.BigQueryClient
 import com.spotify.scio.values.SCollection
 import common.implicits.DateTimeFormatters._
-import deepmarketing.KeywordsPipeline.log
 import deepmarketing.domain.Keyword
 import org.joda.time.DateTime
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration.MINUTES
 
 
 object AdwordsUploaderPipeline {
 
-  val log = LoggerFactory.getLogger(this.getClass)
+  private val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def main(cmdlineArgs: Array[String]): Unit = {
     implicit val (sc, args) = ContextAndArgs(cmdlineArgs)
@@ -23,20 +21,20 @@ object AdwordsUploaderPipeline {
     val date = DateTime.now()
     val execPath = s"gs://adwords-dataflow/structure-uploader/exec/${date.toTimestamp}"
 
-    val generatedSructureTimestamp = args("generatedSructureTimestamp")
+    val generatedStructureTimestamp = args("generatedSructureTimestamp")
     //val generatedSructureTimestamp = "20180501174244"
-    log.info(s"generatedSructureTimestamp = ${generatedSructureTimestamp}")
+    log.info(s"generatedSructureTimestamp = $generatedStructureTimestamp")
 
     // read from structure generation
     // val genStructureExecPath = "gs://adwords-dataflow/structure-generator/exec/20180501174244"
-    val genStructureExecPath = s"gs://adwords-dataflow/structure-generator/exec/${generatedSructureTimestamp}"
-    val genStructureKeywords = sc.objectFile[Keyword](s"${genStructureExecPath}/keywords/*")
-      .withName("generatedKeywords_" + generatedSructureTimestamp)
+    val genStructureExecPath = s"gs://adwords-dataflow/structure-generator/exec/$generatedStructureTimestamp"
+    val genStructureKeywords = sc.objectFile[Keyword](s"$genStructureExecPath/keywords/*")
+      .withName("generatedKeywords_" + generatedStructureTimestamp)
 
-    CampaignsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"${execPath}/campaigns")
-    AdgroupsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"${execPath}/adgroups")
-    KeywordsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"${execPath}/keywords")
-    AdsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"${execPath}/ads")
+    CampaignsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/campaigns")
+    AdgroupsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/adgroups")
+    KeywordsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/keywords")
+    AdsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/ads")
 
     sc.close().waitUntilDone(60, MINUTES)
     log.info("Pipeline finished")

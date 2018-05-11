@@ -1,16 +1,21 @@
 package deepmarketing.infrastructure.repositories
 
 import com.spotify.scio.ScioContext
-import com.spotify.scio.bigquery.BigQueryClient
-import com.spotify.scio.bigquery.types.BigQueryType
 import com.spotify.scio.values.SCollection
+import common.spreadsheet.SheetsBuilder
+import deepmarketing.domain.InputFacet
 
-object InputFacetsRepository {
+class InputFacetsRepository(clientConfigSheet: String) {
 
-  def getInputFacets(sc: ScioContext, bq: BigQueryClient): SCollection[Seq[InputFacet]] = {
-    val facetsGroupedByFacetName = bq.getTypedRows[InputFacet](
-      "SELECT * FROM [adwords-dataflow.adwords_project_data_input.facets_input_federated] WHERE client = \"Trovimap\""
-    ).toList.groupBy(_.facet.get)
+   val inputFacetsValues: List[List[String]] =
+    SheetsBuilder.build(clientConfigSheet).getValues("input_facet", "A2:E1000000")
+
+   val header: List[String] =
+    SheetsBuilder.build(clientConfigSheet).getValues("input_facet", "A1:E1").head
+
+  def getInputFacets(sc: ScioContext, sheetConfig: String): SCollection[Seq[InputFacet]] = {
+
+    val facetsGroupedByFacetName: Map[String, List[InputFacet]] = composeInputFacets.toList.groupBy(_.facet)
 
     sc.parallelize(
       facetsConfig.foldRight(Seq[Seq[InputFacet]]())((x, xs) => xs match {
@@ -19,10 +24,17 @@ object InputFacetsRepository {
       }))
   }
 
-  // Ho hardcodegem. Hauriem de tenir un standard de fecets. En el cas del primer test la geo es deia zone.
-  // El nom del facet que posem ara mateix depen de com es diu a la url.
-  def facetsConfig: Set[String] = Set("action", "type", "geo", "rooms")
-  @BigQueryType.fromTable("adwords-dataflow:adwords_project_data_input.facets_input_federated")
-  class InputFacet
+  private def composeInputFacets: Seq[InputFacet] = {
+    inputFacetsValues
+      .map(row => {
+        InputFacet(
+          if (row.length > header.indexOf("facet")) row(header.indexOf("facet")) else "",
+          if (row.length > header.indexOf("field")) row(header.indexOf("field")) else "",
+          if (row.length > header.indexOf("url_value")) row(header.indexOf("url_value")) else "",
+          if (row.length > header.indexOf("main_facet")) row(header.indexOf("main_facet")) else "",
+          if (row.length > header.indexOf("url_name")) row(header.indexOf("url_name")) else "")
+      })
+  }
 
+  def facetsConfig: Set[String] = Set("action", "type", "geo", "rooms")
 }
