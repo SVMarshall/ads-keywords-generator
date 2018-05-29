@@ -3,7 +3,7 @@ package deepmarketing
 import com.spotify.scio._
 import com.spotify.scio.values.SCollection
 import common.implicits.DateTimeFormatters._
-import deepmarketing.domain.Keyword
+import deepmarketing.domain.{Ad, Keyword}
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -31,10 +31,12 @@ object AdwordsUploaderPipeline {
     val genStructureKeywords = sc.objectFile[Keyword](s"$genStructureExecPath/keywords/*")
       .withName("generatedKeywords_" + generatedStructureTimestamp)
 
+    val genStructureAds = sc.objectFile[Ad](s"$genStructureExecPath/ads/*")
+      .withName("generatedAds_" + generatedStructureTimestamp)
+
     CampaignsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/campaigns")
-    AdgroupsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/adgroups")
     KeywordsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/keywords")
-    AdsAdwordsFieldsBuilder.getFields(genStructureKeywords).saveAsTextFile(s"$execPath/ads")
+    AdsAdwordsFieldsBuilder.getFields(genStructureAds).saveAsTextFile(s"$execPath/ads")
 
     sc.close().waitUntilDone(60, MINUTES)
     log.info("Pipeline finished")
@@ -59,18 +61,18 @@ object AdwordsUploaderPipeline {
   }
 
   case class CampaignAdwordsFields(accountName: String, campaignState: String, campaign: String, budget: String,
-                                   status: String, campaignType: String, campaignSubtype: String, bidStrategyType: String,
+                                   campaignType: String, campaignSubtype: String, bidStrategyType: String, locationId: String,
                                    location: String, deliveryMethod: String, targetingMethod: String, exclusionMethod: String,
                                    language: String, adRotation: String) {
     override def toString: String =
-      Seq(/*accountName, */campaignState, campaign, budget, status, campaignType, campaignSubtype, bidStrategyType,
+      Seq(/*accountName, */ campaignState, campaign, budget, campaignType, campaignSubtype, bidStrategyType, locationId,
           location, deliveryMethod, targetingMethod, exclusionMethod, language, adRotation)
         .map("\"" + _ + "\"").mkString(",")
   }
 
   object CampaignsAdwordsFieldsBuilder {
-    val header = Seq("account name", "campaign state", "campaign", "budget", "status", "campaign type",
-                     "campaign subtype", "bid strategy type", "location", "delivery method", "targeting method",
+    val header = Seq("account name", "campaign state", "campaign", "budget", "campaign type",
+      "campaign subtype", "bid strategy type", "location id", "location", "delivery method", "targeting method",
                      "exclusion method", "language", "ad rotation")
     def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
       keywords.map(kw => {
@@ -78,10 +80,10 @@ object AdwordsUploaderPipeline {
                               campaignState = "disabled",
                               campaign = kw.campaignName,
                               budget = "1000",
-                              status = "Elegible",
                               campaignSubtype = "All features",
                               campaignType = "Search Only",
                               bidStrategyType = "cpc",
+          locationId = "2724",
                               location = "Spain",
                               deliveryMethod = "Accelerated",
                               targetingMethod = "Location of presence or Area of interest",
@@ -92,25 +94,25 @@ object AdwordsUploaderPipeline {
     }
   }
 
-  case class AdgroupAdwordsFields(accountName: String, campaign: String, adgroup: String,
-                                  adgroupState: String, defaultMaxCpc: String) {
-    override def toString: String =
-      Seq(/*accountName, */campaign, adgroup, adgroupState, defaultMaxCpc)
-        .map("\"" + _ + "\"").mkString(",")
-  }
-
-  object AdgroupsAdwordsFieldsBuilder {
-    val header = Seq("account name", "campaign", "ad group", "ad group state", "default max. cpc")
-    def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
-      keywords.map(kw => {
-        AdgroupAdwordsFields(accountName = "account1",
-                             campaign = kw.campaignName,
-                             adgroup = kw.adGroupName,
-                             adgroupState = "disabled",
-                             defaultMaxCpc = "0.01").toString}).withName("createKeywordAdgroup")
-        .distinct
-    }
-  }
+  //  case class AdgroupAdwordsFields(accountName: String, campaign: String, adgroup: String,
+  //                                  adgroupState: String, defaultMaxCpc: String) {
+  //    override def toString: String =
+  //      Seq(/*accountName, */campaign, adgroup, adgroupState, defaultMaxCpc)
+  //        .map("\"" + _ + "\"").mkString(",")
+  //  }
+  //
+  //  object AdgroupsAdwordsFieldsBuilder {
+  //    val header = Seq("account name", "campaign", "ad group", "ad group state", "default max. cpc")
+  //    def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
+  //      keywords.map(kw => {
+  //        AdgroupAdwordsFields(accountName = "account1",
+  //                             campaign = kw.campaignName,
+  //                             adgroup = kw.adGroupName,
+  //                             adgroupState = "enabled",
+  //                             defaultMaxCpc = "0.01").toString}).withName("createKeywordAdgroup")
+  //        .distinct
+  //    }
+  //  }
 
   case class KeywordAdwordsFields(accountName: String, campaign: String, adgroup: String, adgroupState: String,
                                   keyword: String, matchType: String, maxCpc: String, keywordState: String) {
@@ -120,44 +122,50 @@ object AdwordsUploaderPipeline {
   }
 
   object KeywordsAdwordsFieldsBuilder {
-    val header = Seq("account name", "campaign", "ad group", "ad group state", "keyword", "match type", "max. cpc")
+    val header = Seq("account name", "campaign", "ad group", "ad group state", "keyword", "match type", "max cpc")
     def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
       keywords.map(kw => {
         KeywordAdwordsFields(accountName = "account1",
                              campaign = kw.campaignName,
                              adgroup = kw.adGroupName,
-                             adgroupState = "disabled",
-                             keyword = kw.criteria,
-                             matchType = kw.matchType.text.capitalize,
+          adgroupState = "enabled",
+          keyword =
+            if (kw.matchType.text == "BROAD") {
+              kw.criteria.split(" ").map(w => s"+${w}").mkString(" ")
+            } else {
+              kw.criteria
+            },
+          matchType = kw.matchType.text,
                              maxCpc = "0.01",
-                             keywordState = "disabled").toString}).withName("createKeyword")
+          keywordState = "enabled").toString
+      }).withName("createKeyword")
         .distinct
     }
   }
 
-  case class AdsAdwordsFields(accountName: String, campaign: String, adgroup: String,
+  case class AdsAdwordsFields(adgroup: String,
                               headline1: String, headline2: String, description: String,
                               path1: String, path2: String, finalUrl: String) {
     override def toString: String =
-      Seq(/*accountName, */campaign, adgroup, headline1, headline2, description, path1, path2, finalUrl)
+      Seq(/*accountName, */adgroup, headline1, headline2, description, path1, path2, finalUrl)
         .map("\"" + _ + "\"").mkString(",")
   }
 
   object AdsAdwordsFieldsBuilder {
-    val header = Seq("account name", "campaign", "ad group", "headline 1",
+    val header = Seq("ad group", "headline 1",
                      "headline 2", "description", "path 1", "path 2", "final url")
-    def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
-      keywords.flatMap(kw => {
-        kw.ads.map(ad => {
-          AdsAdwordsFields(accountName = "account1",
-                           campaign = kw.campaignName,
-                           adgroup = kw.adGroupName,
-                           headline1 = ad.h1,
-                           headline2 = ad.h2,
-                           description = ad.description,
-                           path1 = "null",
-                           path2 = "null",
-                           finalUrl = ad.finalUrl).toString})
+
+    def getFields(ads: SCollection[Ad]): SCollection[String] = {
+      ads.map(ad => {
+          AdsAdwordsFields(
+            adgroup = ad.adGroupName,
+            headline1 = ad.h1,
+            headline2 = ad.h2,
+            description = ad.description,
+            path1 = "null",
+            path2 = "null",
+            finalUrl = ad.finalUrl
+          ).toString
       }).withName("createKeywordAds")
         .distinct
     }

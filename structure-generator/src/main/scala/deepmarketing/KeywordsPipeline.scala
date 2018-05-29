@@ -30,7 +30,7 @@ object KeywordsPipeline {
     val execPath: String = s"gs://adwords-dataflow/structure-generator/exec/${date.toTimestamp}"
 
     val inputFacets: SCollection[Seq[InputFacet]] =
-      new InputFacetsRepository(clientConfigSheet).getInputFacets(sc, clientConfigSheet)
+      new InputFacetsRepository(clientConfigSheet).getInputFacets(sc)
     val keywords: SCollection[Keyword] = KeywordService.generateKeywordsFromInputFacets(inputFacets)
     val ads: SCollection[Ad] = AdService.generateAds(keywords, clientConfigSheet)
     val negatives: SCollection[Negative] = NegativeService.generateNegatives(keywords)
@@ -41,5 +41,6 @@ object KeywordsPipeline {
     ads.saveAsObjectFile(s"$execPath/ads")
 
     val result: ScioResult = sc.close().waitUntilFinish(60, MINUTES)
+    log.info(execPath)
   }
 }

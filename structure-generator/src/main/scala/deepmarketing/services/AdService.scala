@@ -25,18 +25,32 @@ object AdService {
 
     val adTemplates: Seq[AdTemplate] =
       AdTemplatesRepository.getAdTemplatesForKeyword(keyword, adTemplatesValues, header)
+
     adTemplates.map(template => {
-      Ad(
-        template.replaceTagsInH1(keyword.getInputFacets),
-        template.replaceTagsInH2(keyword.getInputFacets),
-        template.replaceTagsInDescription(keyword.getInputFacets),
-        template.replaceTagsInUrl1(keyword.getInputFacets),
-        template.replaceTagsInUrl2(keyword.getInputFacets),
-        keyword.adGroupName,
-        FinalUrl(keyword).composeUrl
-      )
-    })
+      template.replaceTagsInH1(keyword.getInputFacets)
+        .flatMap(h1 => {
+          template.replaceTagsInH2(keyword.getInputFacets)
+            .flatMap(h2 => {
+              template.replaceTagsInDescription(keyword.getInputFacets)
+                .flatMap(description => {
+                  template.replaceTagsInUrl1(keyword.getInputFacets)
+                    .flatMap(url1 => {
+                      template.replaceTagsInUrl2(keyword.getInputFacets)
+                        .flatMap(url2 => {
+                          Option(
+                            Ad(h1,
+                              h2,
+                              description,
+                              url1,
+                              url2,
+                              keyword.adGroupName,
+                              FinalUrl(keyword).composeUrl)
+                          )
+                        })
+                    })
+                })
+            })
+        })
+    }).filter(_.isDefined).map(_.get)
   }
-
-
 }

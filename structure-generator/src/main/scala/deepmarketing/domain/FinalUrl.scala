@@ -12,13 +12,13 @@ case class FinalUrl(keyword: Keyword) {
     if (keyword.getGeo.isEmpty) {
       baseUrl + "?"
     } else {
-      baseUrl + "/" + keyword.getGeo.replaceAll(" ", "-") + ",Barcelona"
+      baseUrl + "/" + keyword.getGeo.replaceAll(" ", "-") + ",Barcelona?"
     }
   }
 
   private def addInputFacetsToUrl(baseUrl: String): String = {
-    keyword.getInputFacets.map(inputFacet => {
-      if (inputFacet.url_value.isEmpty) inputFacet.url_name + "=" + inputFacet.url_value
-    }).mkString("&")
+    baseUrl + keyword.getInputFacets.collect {
+      case inputFacet if !(inputFacet.url_value.isEmpty || inputFacet.url_name.isEmpty) => inputFacet.url_name + "=" + inputFacet.url_value
+    }.mkString("&")
   }
 }

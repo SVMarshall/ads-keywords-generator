@@ -8,83 +8,78 @@ case class AdTemplate(facetsUsed: String,
                       url_display_2: String
                      ) {
 
-  def replaceTagsInH1(inputFacets: Seq[InputFacet]): String = {
-    var replacement: String = h1
+  def replaceTagsInH1(inputFacets: Seq[InputFacet]): Option[String] = {
+    var (replacementFacet, replacementMainFacet) = (h1, h1)
     inputFacets.foreach(inputFacet => {
-      replacement = replacement.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementFacet = replacementFacet.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementMainFacet = replacementMainFacet.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
     })
 
-    if (isValidHeadline(replacement)) replacement else {
-      replacement = h1
-      inputFacets.foreach(inputFacet => {
-        replacement = replacement.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
-      })
-      replacement
-    }
+    Some(
+      Some(replacementFacet)
+        .filter(isValidHeadline)
+        .getOrElse(replacementMainFacet)
+    ).filter(isValidHeadline)
   }
 
-  def replaceTagsInH2(inputFacets: Seq[InputFacet]): String = {
-    var replacement: String = h2
+  def replaceTagsInH2(inputFacets: Seq[InputFacet]): Option[String] = {
+    var (replacementFacet, replacementMainFacet) = (h2, h2)
     inputFacets.foreach(inputFacet => {
-      replacement = replacement.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementFacet = replacementFacet.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementMainFacet = replacementMainFacet.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
     })
 
-    if (isValidHeadline(replacement)) replacement else {
-      replacement = h2
-      inputFacets.foreach(inputFacet => {
-        replacement = replacement.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
-      })
-      replacement
-    }
+    Some(
+      Some(replacementFacet)
+        .filter(isValidHeadline)
+        .getOrElse(replacementMainFacet)
+    ).filter(isValidHeadline)
   }
 
-  def replaceTagsInDescription(inputFacets: Seq[InputFacet]): String = {
-    var replacement: String = description
+  def replaceTagsInDescription(inputFacets: Seq[InputFacet]): Option[String] = {
+    var (replacementFacet, replacementMainFacet) = (description, description)
     inputFacets.foreach(inputFacet => {
-      replacement = replacement.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementFacet = replacementFacet.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementMainFacet = replacementMainFacet.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
     })
 
-    if (isValidDescription(replacement)) replacement else {
-      replacement = description
-      inputFacets.foreach(inputFacet => {
-        replacement = replacement.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
-      })
-      replacement
-    }
+    Some(
+      Some(replacementFacet)
+        .filter(isValidDescription)
+        .getOrElse(replacementMainFacet)
+    ).filter(isValidDescription)
   }
 
-  def replaceTagsInUrl1(inputFacets: Seq[InputFacet]): String = {
-    var replacement: String = url_display_1
+  def replaceTagsInUrl1(inputFacets: Seq[InputFacet]): Option[String] = {
+    var (replacementFacet, replacementMainFacet) = (url_display_1, url_display_1)
     inputFacets.foreach(inputFacet => {
-      replacement = replacement.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementFacet = replacementFacet.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementMainFacet = replacementMainFacet.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
     })
 
-    if (isValidUrl(replacement)) replacement else {
-      replacement = url_display_1
-      inputFacets.foreach(inputFacet => {
-        replacement = replacement.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
-      })
-      replacement
-    }
+    Some(
+      Some(replacementFacet)
+        .filter(isValidUrl)
+        .getOrElse(replacementMainFacet)
+    ).filter(isValidUrl)
   }
 
-  def replaceTagsInUrl2(inputFacets: Seq[InputFacet]): String = {
-    var replacement: String = url_display_2
+  def replaceTagsInUrl2(inputFacets: Seq[InputFacet]): Option[String] = {
+    var (replacementFacet, replacementMainFacet) = (url_display_2, url_display_2)
     inputFacets.foreach(inputFacet => {
-      replacement = replacement.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementFacet = replacementFacet.replaceAll(s"#${inputFacet.facet}#", inputFacet.field).trim
+      replacementMainFacet = replacementMainFacet.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
     })
 
-    if (isValidUrl(replacement)) replacement else {
-      replacement = url_display_2
-      inputFacets.foreach(inputFacet => {
-        replacement = replacement.replaceAll(s"#${inputFacet.facet}#", useMainFacetIfDefined(inputFacet)).trim
-      })
-      replacement
-    }
+    Some(
+      Some(replacementFacet)
+        .filter(isValidUrl)
+        .getOrElse(replacementMainFacet)
+    ).filter(isValidUrl)
   }
 
   private def useMainFacetIfDefined(inputFacet: InputFacet): String = {
-    if (inputFacet.main_facet.isEmpty) inputFacet.main_facet else inputFacet.field
+    if (inputFacet.main_facet.isEmpty) inputFacet.field else inputFacet.main_facet
   }
 
   private def isValidHeadline(text: String) = {

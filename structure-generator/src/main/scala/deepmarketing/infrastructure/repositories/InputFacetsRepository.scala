@@ -13,7 +13,7 @@ class InputFacetsRepository(clientConfigSheet: String) {
    val header: List[String] =
     SheetsBuilder.build(clientConfigSheet).getValues("input_facet", "A1:E1").head
 
-  def getInputFacets(sc: ScioContext, sheetConfig: String): SCollection[Seq[InputFacet]] = {
+  def getInputFacets(sc: ScioContext): SCollection[Seq[InputFacet]] = {
 
     val facetsGroupedByFacetName: Map[String, List[InputFacet]] = composeInputFacets.toList.groupBy(_.facet)
 
