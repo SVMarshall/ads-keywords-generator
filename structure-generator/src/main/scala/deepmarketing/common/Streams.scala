@@ -1,4 +1,4 @@
-package common
+package deepmarketing.common
 
 import com.google.common.io.Closer
 import com.google.common.io.Files

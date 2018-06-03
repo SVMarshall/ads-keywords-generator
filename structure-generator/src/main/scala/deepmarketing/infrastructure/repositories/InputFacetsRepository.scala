@@ -2,7 +2,7 @@ package deepmarketing.infrastructure.repositories
 
 import com.spotify.scio.ScioContext
 import com.spotify.scio.values.SCollection
-import common.spreadsheet.SheetsBuilder
+import deepmarketing.common.spreadsheet.SheetsBuilder
 import deepmarketing.domain.InputFacet
 
 class InputFacetsRepository(clientConfigSheet: String) {

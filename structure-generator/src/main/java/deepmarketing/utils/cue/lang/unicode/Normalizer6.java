@@ -13,46 +13,22 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package cue.lang.unicode;
+package deepmarketing.utils.cue.lang.unicode;
 
 /**
  * 
  * @author Jonathan Feinberg <jdf@us.ibm.com>
  * 
  */
-public abstract class Normalizer
+class Normalizer6 extends Normalizer
 {
-	public static Normalizer getInstance()
+	public Normalizer6()
 	{
-		return INSTANCE;
 	}
 
-	abstract public String normalize(final String s);
-
-	private static final Normalizer INSTANCE;
-	static
+	@Override
+	public String normalize(final String s)
 	{
-		try
-		{
-			INSTANCE = (Normalizer) Class.forName(getNormalizerClass()).getConstructor()
-					.newInstance();
-		}
-		catch (final Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static String getNormalizerClass()
-	{
-		try
-		{
-			Class.forName("java.text.Normalizer");
-			return "cue.lang.unicode.Normalizer6";
-		}
-		catch (final Exception e)
-		{
-			return "cue.lang.unicode.Normalizer5";
-		}
+		return java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFKD);
 	}
 }

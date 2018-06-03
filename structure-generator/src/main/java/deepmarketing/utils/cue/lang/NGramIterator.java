@@ -13,14 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package cue.lang;
+package deepmarketing.utils.cue.lang;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import cue.lang.stop.StopWords;
+import deepmarketing.utils.cue.lang.stop.StopWords;
 
 /**
  * Construct with a {@link String}, some integer n, and a {@link Locale}; 

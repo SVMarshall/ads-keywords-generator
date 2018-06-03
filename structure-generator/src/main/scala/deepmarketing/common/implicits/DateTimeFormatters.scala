@@ -1,4 +1,4 @@
-package common.implicits
+package deepmarketing.common.implicits
 
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat

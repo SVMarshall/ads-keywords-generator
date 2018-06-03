@@ -1,7 +1,7 @@
 package deepmarketing.services
 
 import com.spotify.scio.values.SCollection
-import common.spreadsheet.SheetsBuilder
+import deepmarketing.common.spreadsheet.SheetsBuilder
 import deepmarketing.domain.{Ad, AdTemplate, FinalUrl, Keyword}
 import deepmarketing.infrastructure.repositories.AdTemplatesRepository
 

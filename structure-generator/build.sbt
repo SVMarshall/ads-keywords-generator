@@ -62,7 +62,12 @@ lazy val root: Project = Project("structure-generator", file("."))
       //"com.google.api-client" % "google-api-client" % "1.23.0",  // 1.23 breaks apache beam :(
       "com.google.api-client" % "google-api-client" % "1.22.0",
       "com.google.oauth-client" % "google-oauth-client-jetty" % "1.22.0",
-      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.22.0"
+      "com.google.apis" % "google-api-services-sheets" % "v4-rev491-1.22.0",
+
+      // NPL
+      //"org.apache.opennlp" % "opennlp-tools" % "1.8.4"
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.9.1",
+      "edu.stanford.nlp" % "stanford-corenlp" % "3.9.1" classifier "models-spanish"
 
       // avro schemas for scala
       //"com.sksamuel.avro4s" %% "avro4s-core" % "1.8.3"

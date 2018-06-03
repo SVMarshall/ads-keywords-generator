@@ -14,7 +14,7 @@
    limitations under the License.
  */
 
-package cue.lang;
+package deepmarketing.utils.cue.lang;
 
 import java.util.ArrayList;
 import java.util.Collections;

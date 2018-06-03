@@ -4,6 +4,7 @@ import com.spotify.scio._
 import com.spotify.scio.values.SCollection
 import common.implicits.DateTimeFormatters._
 import deepmarketing.domain.{Ad, Keyword}
+import deepmarketing.utils.cue.lang.stop.StopWords
 import org.joda.time.DateTime
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -123,17 +124,32 @@ object AdwordsUploaderPipeline {
 
   object KeywordsAdwordsFieldsBuilder {
     val header = Seq("account name", "campaign", "ad group", "ad group state", "keyword", "match type", "max cpc")
+
+    def removePunctuation(criteria: String) = {
+      criteria
+        .replaceAll("á|à", "a")
+        .replaceAll("é|è", "e")
+        .replaceAll("í", "i")
+        .replaceAll("ó|ò", "o")
+        .replaceAll("ú", "u")
+    }
+
     def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
       keywords.map(kw => {
+        // get kw text without punctuation
+        val kwText = removePunctuation(kw.criteria)
+
         KeywordAdwordsFields(accountName = "account1",
                              campaign = kw.campaignName,
                              adgroup = kw.adGroupName,
           adgroupState = "enabled",
           keyword =
             if (kw.matchType.text == "BROAD") {
-              kw.criteria.split(" ").map(w => s"+${w}").mkString(" ")
+              kwText.split(" ").map(w => {
+                if (!StopWords.Spanish.isStopWord(w)) "+" + w else w}
+              ).mkString(" ")
             } else {
-              kw.criteria
+              kwText
             },
           matchType = kw.matchType.text,
                              maxCpc = "0.01",

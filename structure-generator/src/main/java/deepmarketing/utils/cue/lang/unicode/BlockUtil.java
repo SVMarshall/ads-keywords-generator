@@ -13,15 +13,15 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package cue.lang.unicode;
+package deepmarketing.utils.cue.lang.unicode;
 
 import java.lang.Character.UnicodeBlock;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import cue.lang.Counter;
-import cue.lang.WordIterator;
+import deepmarketing.utils.cue.lang.Counter;
+import deepmarketing.utils.cue.lang.WordIterator;
 
 public class BlockUtil
 {
