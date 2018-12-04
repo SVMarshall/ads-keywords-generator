@@ -18,16 +18,13 @@ object AdwordsUploaderPipeline {
   def main(cmdlineArgs: Array[String]): Unit = {
     implicit val (sc, args) = ContextAndArgs(cmdlineArgs)
 
-    //val bq: BigQueryClient = BigQueryClient.defaultInstance()
     val date = DateTime.now()
     val execPath = s"gs://adwords-dataflow/structure-uploader/exec/${date.toTimestamp}"
 
     val generatedStructureTimestamp = args("generatedSructureTimestamp")
-    //val generatedSructureTimestamp = "20180501174244"
     log.info(s"generatedSructureTimestamp = $generatedStructureTimestamp")
 
     // read from structure generation
-    // val genStructureExecPath = "gs://adwords-dataflow/structure-generator/exec/20180501174244"
     val genStructureExecPath = s"gs://adwords-dataflow/structure-generator/exec/$generatedStructureTimestamp"
     val genStructureKeywords = sc.objectFile[Keyword](s"$genStructureExecPath/keywords/*")
       .withName("generatedKeywords_" + generatedStructureTimestamp)
@@ -49,10 +46,10 @@ object AdwordsUploaderPipeline {
       val structureFiles = s"gs://adwords-dataflow/structure-uploader/exec/${timestamp}/${structureField}s/*"
       val structureOutput = s"gs://adwords-dataflow/structure-uploader/csv/${timestamp}/${structureField}s.csv"
       val composeCommand = "gsutil compose " + headersFile + " " + structureFiles + " " + structureOutput
-      //log.info("Compose command: " + composeCommand)
+
       println("Compose command: " + composeCommand)
       val composeExec = composeCommand.!
-      //log.info("Compose Command output:" + composeExec)
+
       println("Compose Command output:" + composeExec)
     }
     composeCsv(date.toTimestamp, "campaign")
@@ -94,26 +91,6 @@ object AdwordsUploaderPipeline {
         .distinct
     }
   }
-
-  //  case class AdgroupAdwordsFields(accountName: String, campaign: String, adgroup: String,
-  //                                  adgroupState: String, defaultMaxCpc: String) {
-  //    override def toString: String =
-  //      Seq(/*accountName, */campaign, adgroup, adgroupState, defaultMaxCpc)
-  //        .map("\"" + _ + "\"").mkString(",")
-  //  }
-  //
-  //  object AdgroupsAdwordsFieldsBuilder {
-  //    val header = Seq("account name", "campaign", "ad group", "ad group state", "default max. cpc")
-  //    def getFields(keywords: SCollection[Keyword]): SCollection[String] = {
-  //      keywords.map(kw => {
-  //        AdgroupAdwordsFields(accountName = "account1",
-  //                             campaign = kw.campaignName,
-  //                             adgroup = kw.adGroupName,
-  //                             adgroupState = "enabled",
-  //                             defaultMaxCpc = "0.01").toString}).withName("createKeywordAdgroup")
-  //        .distinct
-  //    }
-  //  }
 
   case class KeywordAdwordsFields(accountName: String, campaign: String, adgroup: String, adgroupState: String,
                                   keyword: String, matchType: String, maxCpc: String, keywordState: String) {

@@ -11,12 +11,6 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
 
-/*
-sbt "runMain [PACKAGE].KeywordsPipeline
-  --project=[PROJECT] --runner=DataflowRunner --zone=[ZONE]
-  --input=gs://dataflow-samples/shakespeare/kinglear.txt
-  --output=gs://[BUCKET]/[PATH]/wordcount"
-*/
 
 object KeywordsPipeline {
 

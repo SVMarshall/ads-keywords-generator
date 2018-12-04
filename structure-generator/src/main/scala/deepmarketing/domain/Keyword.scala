@@ -1,6 +1,5 @@
 package deepmarketing.domain
 
-//object Keyword {
 //@AvroType.toSchema
 case class Keyword(inputFacets: Seq[InputFacet],
                    criteria: String,
