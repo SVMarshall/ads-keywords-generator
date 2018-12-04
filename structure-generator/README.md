@@ -1,8 +1,11 @@
 # Structure Generator
 
-## Raison d'être:
+Simple Scio Adwords structure generator. 
+Spike for testing some ideas on auto generation of massive adwords accounts. 
 
-TODO: your project description
+Playing with Scio on top of Google Cloud Dataflow (Apache Beam)
+
+https://github.com/spotify/scio
 
 ## Features:
 
